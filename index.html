@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Streaks">
+<meta name="theme-color" content="#15121f">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>Streaks</title>
+<style>
+:root{--bg:#15121f;--s1:#211d31;--s2:#2b2640;--tx:#f3eff9;--mu:#9a93b3;--em:#ff7a45;--em2:#ffb35c;--ok:#7be0b0;--r:18px;
+--f:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.35 var(--f);overscroll-behavior:none}
+body{padding-top:env(safe-area-inset-top)}
+#app{max-width:560px;margin:0 auto;height:100%;display:flex;flex-direction:column}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 24px}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+h1{font-size:30px;margin:6px 0 2px;letter-spacing:-.5px}
+.sub{color:var(--mu);margin:0 0 16px}
+.sum{display:flex;gap:10px;margin-bottom:16px}
+.sum div{flex:1;background:var(--s1);border-radius:var(--r);padding:12px 14px}
+.sum b{display:block;font-size:24px}
+.sum span{color:var(--mu);font-size:13px}
+.row{display:flex;align-items:center;gap:12px;background:var(--s1);border-radius:var(--r);padding:10px 10px 10px 16px;margin-bottom:8px}
+.row .nm{flex:1;min-width:0;text-align:left}
+.row .nm b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .nm small{color:var(--mu)}
+.st{min-width:52px;text-align:center;font-weight:800;font-size:26px;line-height:1;color:var(--mu)}
+.st i{display:block;font:normal 11px var(--f);margin-top:3px;color:var(--mu)}
+.st.on{color:var(--em)}.st.hot{color:var(--em2)}
+.chk{width:46px;height:46px;border-radius:50%;border:2px solid var(--s2);display:grid;place-items:center;flex:none;transition:.15s}
+.chk svg{width:22px;height:22px;opacity:0;stroke:var(--bg);stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.chk.on{background:var(--em);border-color:var(--em);animation:pop .25s}
+.chk.on svg{opacity:1}
+@keyframes pop{50%{transform:scale(1.18)}}
+nav{display:flex;background:var(--s1);padding:8px 16px calc(8px + env(safe-area-inset-bottom));gap:8px}
+nav button{flex:1;padding:10px;border-radius:14px;color:var(--mu);font-weight:600}
+nav button.on{background:var(--s2);color:var(--tx)}
+.sheet{position:fixed;inset:0;background:var(--bg);z-index:10;overflow-y:auto;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(30px + env(safe-area-inset-bottom));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sheet>div{max-width:560px;margin:0 auto}
+.back{color:var(--em);font-weight:600;padding:8px 0}
+.big{text-align:center;margin:10px 0 18px}
+.big .n{font-size:84px;font-weight:800;line-height:1;color:var(--em);letter-spacing:-3px}
+.big p{margin:4px 0 0;color:var(--mu)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.grid3 div{background:var(--s1);border-radius:14px;padding:10px;text-align:center}
+.grid3 b{display:block;font-size:20px}.grid3 span{font-size:12px;color:var(--mu)}
+.cal{background:var(--s1);border-radius:var(--r);padding:14px}
+.cal header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700}
+.cal header button{width:36px;height:36px;border-radius:50%;background:var(--s2)}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.days span{font-size:11px;color:var(--mu)}
+.d{aspect-ratio:1;border-radius:50%;font-size:14px;color:var(--mu);display:grid;place-items:center}
+.d.done{background:var(--em);color:var(--bg);font-weight:700}
+.d.today{outline:2px solid var(--tx);outline-offset:1px}
+.d.fut{opacity:.25;pointer-events:none}
+.hint{color:var(--mu);font-size:13px;text-align:center;margin-top:10px}
+.card{background:var(--s1);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.wi{display:flex;gap:8px}
+.wi input{flex:1;min-width:0;background:var(--s2);border:0;color:var(--tx);font:700 22px var(--f);border-radius:14px;padding:12px 14px;outline:none}
+.wi input[type=date]{flex:none;width:140px;font-size:15px;font-weight:500}
+.btn{background:var(--em);color:var(--bg);font-weight:700;border-radius:14px;padding:0 20px}
+.btn.ghost{background:var(--s2);color:var(--tx);padding:12px 16px;margin-right:8px}
+.wl{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--s2)}
+.wl:last-child{border:0}.wl small{color:var(--mu)}
+.wl button{color:var(--mu);padding:4px 8px}
+.up{color:#ff8a8a}.dn{color:var(--ok)}
+svg.ch{width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+<div id="app"><main id="main"></main>
+<nav><button id="t-h">Habits</button><button id="t-w">Weight</button></nav></div>
+<div id="sheet" class="sheet" hidden></div>
+<script>
+const HABITS=["Brush – Morning","Rauchen aufhören","Fitness","10K Steps or 45 Cardio","Breakfast + Omega 3 + Vitamin D","Protein 1","Room Clean","Ausbildung suchen","Arbeit suchen","Protein 2","Brush – Night","Magnesium + Ashwagandha","Hair Care","LoMo Exercise","FoMo Exercise","K aufhören","10 Pages Reading","YA aufhören","Skin Care – Morning","Skin Care – Night","TT Smo","TT Bod","TT LoMo"];
+const KEY="streaks.v1";
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{logs:{},weights:{}};
+const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const today=()=>iso(new Date());
+const add=(s,n)=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return iso(d)};
+const set=i=>new Set(S.logs[i]||[]);
+function stats(i){
+  const st=set(i);let d=today();if(!st.has(d))d=add(d,-1);
+  let cur=0;while(st.has(d)){cur++;d=add(d,-1)}
+  let best=0,run=0,prev=null;
+  [...st].sort().forEach(x=>{run=(prev&&add(prev,1)===x)?run+1:1;best=Math.max(best,run);prev=x});
+  return{cur,best,total:st.size,doneToday:st.has(today())}
+}
+function toggle(i,day){
+  const st=set(i);st.has(day)?st.delete(day):st.add(day);
+  S.logs[i]=[...st].sort();save()
+}
+const CHECK='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+let tab="h",open=null,month=today().slice(0,7);
+
+function render(){
+  $("t-h").className=tab==="h"?"on":"";$("t-w").className=tab==="w"?"on":"";
+  $("main").innerHTML=tab==="h"?home():weightView();
+  if(tab==="w")bindWeight();
+  if(open!==null)sheet();
+}
+const $=id=>document.getElementById(id);
+
+function home(){
+  const all=HABITS.map((_,i)=>stats(i));
+  const done=all.filter(s=>s.doneToday).length;
+  const top=Math.max(0,...all.map(s=>s.cur));
+  const dt=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+  return `<h1>Streaks</h1><p class="sub">${dt}</p>
+  <div class="sum"><div><b>${done}/${HABITS.length}</b><span>done today</span></div><div><b>${top}</b><span>longest running streak</span></div></div>
+  ${HABITS.map((h,i)=>{const s=all[i];
+    return `<div class="row"><button class="nm" onclick="openH(${i})"><b>${h}</b><small>best ${s.best} · total ${s.total}</small></button>
+    <button class="st ${s.cur?"on":""} ${s.cur>=30?"hot":""}" onclick="openH(${i})">${s.cur}<i>${s.cur===1?"day":"days"}</i></button>
+    <button class="chk ${s.doneToday?"on":""}" onclick="tog(${i})" aria-label="Mark ${h} done today">${CHECK}</button></div>`}).join("")}
+  <p class="hint">Tap a habit to see its streak and edit past days.</p>
+  <div style="text-align:center;margin-top:14px"><button class="btn ghost" onclick="exp()">Copy backup</button><button class="btn ghost" onclick="imp()">Restore</button></div>`;
+}
+function tog(i){toggle(i,today());render()}
+function openH(i){open=i;month=today().slice(0,7);render()}
+function closeH(){open=null;$("sheet").hidden=true;render()}
+function shift(n){const[y,m]=month.split("-").map(Number);const d=new Date(y,m-1+n,1);month=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");sheet()}
+function day(i,ds){toggle(i,ds);render()}
+
+function sheet(){
+  const i=open,s=stats(i),st=set(i),[y,m]=month.split("-").map(Number);
+  const first=new Date(y,m-1,1),off=(first.getDay()+6)%7,n=new Date(y,m,0).getDate(),t=today();
+  let cells="";for(let k=0;k<off;k++)cells+="<div></div>";
+  for(let d=1;d<=n;d++){const ds=`${month}-${String(d).padStart(2,"0")}`;
+    cells+=`<button class="d ${st.has(ds)?"done":""} ${ds===t?"today":""} ${ds>t?"fut":""}" onclick="day(${i},'${ds}')">${d}</button>`}
+  const mn=first.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
+  const sh=$("sheet");sh.hidden=false;
+  sh.innerHTML=`<div><button class="back" onclick="closeH()">‹ All habits</button>
+  <h1 style="text-align:center;font-size:22px">${HABITS[i]}</h1>
+  <div class="big"><div class="n">${s.cur}</div><p>${s.cur===1?"day":"days"} in a row${s.doneToday?"":s.cur?" · log today to keep it":""}</p></div>
+  <div class="grid3"><div><b>${s.best}</b><span>best streak</span></div><div><b>${s.total}</b><span>total days</span></div><div><b>${last30(st)}</b><span>last 30 days</span></div></div>
+  <div class="cal"><header><button onclick="shift(-1)">‹</button>${mn}<button onclick="shift(1)">›</button></header>
+  <div class="days">${["M","T","W","T","F","S","S"].map(x=>`<span>${x}</span>`).join("")}${cells}</div></div>
+  <p class="hint">Tap any day to mark or unmark it.</p></div>`;
+}
+function last30(st){let c=0,d=today();for(let k=0;k<30;k++){if(st.has(d))c++;d=add(d,-1)}return c}
+
+function weightView(){
+  const ws=Object.entries(S.weights).sort();
+  const cur=ws.length?ws[ws.length-1][1]:null;
+  const chg=ws.length>1?cur-ws[0][1]:0;
+  const wk=ws.length>1?(()=>{const t=add(today(),-7);const old=[...ws].reverse().find(e=>e[0]<=t);return old?cur-old[1]:null})():null;
+  const f=v=>(v>0?"+":"")+v.toFixed(1);
+  const cls=v=>v>0?"up":v<0?"dn":"";
+  return `<h1>Weight</h1><p class="sub">Log it once a day, ideally the same time.</p>
+  <div class="card"><div class="wi"><input id="wv" type="number" inputmode="decimal" step="0.1" placeholder="kg"><input id="wd" type="date" value="${today()}" max="${today()}"><button class="btn" id="ws">Save</button></div></div>
+  <div class="grid3"><div><b>${cur!==null?cur.toFixed(1):"–"}</b><span>current kg</span></div>
+  <div><b class="${cls(wk)}">${wk!==null?f(wk):"–"}</b><span>vs 7 days ago</span></div>
+  <div><b class="${cls(chg)}">${ws.length>1?f(chg):"–"}</b><span>since start</span></div></div>
+  ${ws.length>1?`<div class="card">${chart(ws.slice(-60))}</div>`:""}
+  <div class="card" style="padding:6px 14px">${ws.length?[...ws].reverse().slice(0,60).map(([d,v],k,a)=>{const p=a[k+1];const df=p?v-p[1]:null;
+   return `<div class="wl"><div><b>${v.toFixed(1)} kg</b> ${df!==null&&df!==0?`<span class="${cls(df)}">${f(df)}</span>`:""}<br><small>${new Date(d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</small></div><button onclick="delW('${d}')" aria-label="Delete">✕</button></div>`}).join(""):'<p class="hint">No entries yet. Enter today\'s weight above.</p>'}</div>`;
+}
+function chart(ws){
+  const W=340,H=150,p=14,v=ws.map(e=>e[1]);let lo=Math.min(...v)-.5,hi=Math.max(...v)+.5;
+  const x=i=>p+i*(W-2*p)/(ws.length-1),y=a=>H-p-(a-lo)/(hi-lo)*(H-2*p);
+  const pts=ws.map((e,i)=>`${x(i).toFixed(1)},${y(e[1]).toFixed(1)}`);
+  const li=ws.length-1;
+  return `<svg class="ch" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a45" stop-opacity=".35"/><stop offset="1" stop-color="#ff7a45" stop-opacity="0"/></linearGradient></defs>
+  <polygon points="${p},${H-p} ${pts.join(" ")} ${x(li)},${H-p}" fill="url(#g)"/>
+  <polyline points="${pts.join(" ")}" fill="none" stroke="#ff7a45" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="${x(li)}" cy="${y(v[li])}" r="5" fill="#ffb35c"/>
+  <text x="${p}" y="12" fill="#9a93b3" font-size="11">${hi.toFixed(1)}</text><text x="${p}" y="${H-2}" fill="#9a93b3" font-size="11">${lo.toFixed(1)}</text></svg>`;
+}
+function bindWeight(){
+  $("ws").onclick=()=>{const v=parseFloat($("wv").value.replace(",","."));const d=$("wd").value||today();
+    if(!(v>20&&v<400)){$("wv").focus();return}S.weights[d]=Math.round(v*10)/10;save();render()};
+  const ws=Object.entries(S.weights).sort();if(ws.length)$("wv").placeholder=ws[ws.length-1][1].toFixed(1)+" kg";
+}
+function delW(d){delete S.weights[d];save();render()}
+function exp(){const j=JSON.stringify(S);(navigator.clipboard?navigator.clipboard.writeText(j):Promise.reject()).then(()=>alert("Backup copied. Paste it into Notes or a message to keep it safe.")).catch(()=>prompt("Copy this backup:",j))}
+function imp(){const j=prompt("Paste your backup here. This replaces current data.");if(!j)return;
+  try{const o=JSON.parse(j);if(!o.logs||!o.weights)throw 0;S=o;save();render()}catch(e){alert("That backup didn't look right.")}}
+$("t-h").onclick=()=>{tab="h";render()};$("t-w").onclick=()=>{tab="w";render()};
+render();
+if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js");
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
+</script>
+</body>
+</html>
