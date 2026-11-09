@@ -17,7 +17,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.35 var(--f);overscroll-behavior:none}
 body{padding-top:env(safe-area-inset-top)}
-#app{max-width:560px;margin:0 auto;height:100%;display:flex;flex-direction:column}
+#app{height:100%;display:flex;flex-direction:column}
 main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 24px}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 h1{font-size:30px;margin:6px 0 2px;letter-spacing:-.5px}
@@ -53,9 +53,16 @@ h1{font-size:30px;margin:6px 0 2px;letter-spacing:-.5px}
 nav{display:flex;background:var(--s1);padding:8px 16px calc(8px + env(safe-area-inset-bottom));gap:8px}
 nav button{flex:1;padding:10px;border-radius:14px;color:var(--mu);font-weight:600}
 nav button.on{background:var(--s2);color:var(--tx)}
+nav{justify-content:center}nav button{max-width:220px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:0 22px;align-items:start}
+.narrow{max-width:760px;margin:0 auto}
+.zoom{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;color:var(--mu);font-weight:600}
+.zoom button{min-width:52px;height:40px;border-radius:12px;background:var(--s2);color:var(--tx);font-weight:700}
+.zoom span{min-width:56px;text-align:center}
+@media (min-width:900px){main{padding:20px 32px 36px}}
 .sheet{position:fixed;inset:0;background:var(--bg);z-index:10;overflow-y:auto;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(30px + env(safe-area-inset-bottom));animation:up .22s ease-out}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
-.sheet>div{max-width:560px;margin:0 auto}
+.sheet>div{max-width:640px;margin:0 auto}
 .back{color:var(--em);font-weight:600;padding:8px 0}
 .big{text-align:center;margin:10px 0 18px}
 .big .n{font-size:84px;font-weight:800;line-height:1;color:var(--em);letter-spacing:-3px}
@@ -251,6 +258,9 @@ function cntStats(i){
 }
 const CHECK='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 let tab="h",open=null,editing=false,month=today().slice(0,7),tt;
+const ZK="streaks.zoom";let Z=1;try{Z=parseFloat(localStorage.getItem(ZK))||1}catch(e){}
+function applyZoom(){Z=Math.min(2,Math.max(.6,Math.round(Z*10)/10));document.documentElement.style.zoom=Z}
+function setZoom(d){Z+=d;applyZoom();try{localStorage.setItem(ZK,String(Z))}catch(e){}render()}
 const $=id=>document.getElementById(id);
 function toast(m){const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),2600)}
 const last30=st=>{let c=0,d=today();for(let k=0;k<30;k++){if(st.has(d))c++;d=add(d,-1)}return c};
@@ -290,13 +300,14 @@ function home(){
   <div class="sum"><div><b>${done}/${track.length}</b><span>done today</span></div><div><b>${live}</b><span>habits on a streak</span></div></div>
   ${nb?`<div class="card warn"><b>Back up your data</b><p>Last backup: ${nb}. Your history only lives on this phone.</p><button class="btn" style="padding:10px 18px" onclick="exp()">Copy backup</button></div>`:""}
   <div style="margin:-6px 0 4px"><button class="btn ghost" style="margin:0" onclick="openEd()">Edit habits</button></div>
-  ${GROUPS.map((g,gi)=>{
+  <div class="cols">${GROUPS.map((g,gi)=>{
     const ids=vis.filter(i=>gOf(i)===gi);if(!ids.length)return"";
     const tr=ids.filter(i=>all[i].t!=="q"),n=tr.filter(i=>all[i].done).length;
-    return `<div class="gh ${gi===nowGroup()?"now":""} ${tr.length&&n===tr.length?"full":""}"><b>${g.k}</b><small>${g.sub}</small><span>${tr.length?n+"/"+tr.length:""}</span></div>`+ids.map(i=>row(i,all[i])).join("");
-  }).join("")}
+    return `<div class="sec"><div class="gh ${gi===nowGroup()?"now":""} ${tr.length&&n===tr.length?"full":""}"><b>${g.k}</b><small>${g.sub}</small><span>${tr.length?n+"/"+tr.length:""}</span></div>`+ids.map(i=>row(i,all[i])).join("")+`</div>`;
+  }).join("")}</div>
   <p class="hint">Tap a habit to see its streak. Daily habits keep their streak on a rest day, weekly ones count weeks, quit habits count days since your last slip.${nh?" "+nh+" hidden.":""}</p>
-  <div style="text-align:center;margin-top:14px"><button class="btn ghost" onclick="exp()">Copy backup</button><button class="btn ghost" onclick="imp()">Restore</button></div>`;
+  <div style="text-align:center;margin-top:14px"><button class="btn ghost" onclick="exp()">Copy backup</button><button class="btn ghost" onclick="imp()">Restore</button></div>
+  <div class="zoom"><button onclick="setZoom(-.1)" aria-label="Make everything smaller">A−</button><span>${Math.round(Z*100)}%</span><button onclick="setZoom(.1)" aria-label="Make everything larger">A+</button></div>`;
 }
 function tog(i){
   const was=stats(i).cur,on=toggle(i,today());render();
@@ -392,9 +403,9 @@ function weekView(){
       return `<button class="wk" onclick="openH(${i})"><span class="wn">${HABITS[i]}</span><span class="dots">${cells}</span><b class="wc ${s.cur?"on":""}">${s.cur}${t==="w"?"w":""}</b></button>`;
     }).join("");
   }).join("");
-  return `<h1>Week</h1><p class="sub">${total} check-ins in the last 7 days</p>
+  return `<div class="narrow"><h1>Week</h1><p class="sub">${total} check-ins in the last 7 days</p>
   <div class="wk wkh"><span class="wn"></span><span class="dots">${lbl}</span><b class="wc"></b></div>${body}
-  <p class="hint">Right column: current streak (w = weeks). Tap a row for details.</p>`;
+  <p class="hint">Right column: current streak (w = weeks). Tap a row for details.</p></div>`;
 }
 
 /* ---------- Edit habits ---------- */
@@ -441,7 +452,7 @@ function weightView(){
   if(need!==null){if(Math.abs(need)<.05)eta="reached";else if(p!==null&&p*need>0){const w=Math.ceil(need/p);eta=w>104?"100+ wks":w+(w===1?" wk":" wks")}}
   const togo=need===null?"–":Math.abs(need)<.05?"0.0":Math.abs(need).toFixed(1);
   const togoL=need===null||Math.abs(need)<.05?"kg to go":(need>0?"kg to gain":"kg to lose");
-  return `<h1>Weight</h1><p class="sub">Log it once a day, ideally at the same time.</p>
+  return `<div class="narrow"><h1>Weight</h1><p class="sub">Log it once a day, ideally at the same time.</p>
   <div class="card"><div class="wi"><input id="wv" type="number" inputmode="decimal" step="0.1" placeholder="kg"><input id="wd" type="date" value="${today()}" max="${today()}"><button class="btn" id="ws">Save</button></div></div>
   <div class="grid3"><div><b>${cur!==null?cur.toFixed(1):"–"}</b><span>current kg</span></div>
   <button class="tile" onclick="setGoal()"><b>${goal.toFixed(1)}</b><span>goal kg · tap to edit</span></button>
@@ -451,7 +462,7 @@ function weightView(){
   <div><b>${eta}</b><span>est. to goal</span></div></div>
   ${ws.length>1?`<div class="card">${chart(ws.slice(-60),goal)}</div>`:""}
   <div class="card" style="padding:6px 14px">${ws.length?[...ws].reverse().slice(0,60).map(([d,v],k,a)=>{const q=a[k+1];const df=q?v-q[1]:null;
-   return `<div class="wl"><div><b>${v.toFixed(1)} kg</b> ${df!==null&&df!==0?`<span class="${good(df)}">${f(df)}</span>`:""}<br><small>${new Date(d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</small></div><button onclick="delW('${d}')" aria-label="Delete">✕</button></div>`}).join(""):'<p class="hint">No entries yet. Enter today\'s weight above.</p>'}</div>`;
+   return `<div class="wl"><div><b>${v.toFixed(1)} kg</b> ${df!==null&&df!==0?`<span class="${good(df)}">${f(df)}</span>`:""}<br><small>${new Date(d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</small></div><button onclick="delW('${d}')" aria-label="Delete">✕</button></div>`}).join(""):'<p class="hint">No entries yet. Enter today\'s weight above.</p>'}</div></div>`;
 }
 function chart(ws,goal){
   const W=340,HH=160,p=14,v=ws.map(e=>e[1]);
@@ -490,6 +501,7 @@ function imp(){
 }
 $("t-h").onclick=()=>{tab="h";render()};$("t-k").onclick=()=>{tab="k";render()};$("t-w").onclick=()=>{tab="w";render()};
 norm();
+applyZoom();
 render();
 if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js");
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
