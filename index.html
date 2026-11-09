@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.json">
 <title>Streaks</title>
 <style>
-:root{--bg:#15121f;--s1:#211d31;--s2:#2b2640;--tx:#f3eff9;--mu:#9a93b3;--em:#ff7a45;--em2:#ffb35c;--ok:#7be0b0;--r:18px;
+:root{--bg:#15121f;--s1:#211d31;--s2:#2b2640;--tx:#f3eff9;--mu:#9a93b3;--em:#ff7a45;--em2:#ffb35c;--ok:#7be0b0;--bad:#ff8a8a;--r:18px;
 --f:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.35 var(--f);overscroll-behavior:none}
@@ -26,10 +26,20 @@ h1{font-size:30px;margin:6px 0 2px;letter-spacing:-.5px}
 .sum div{flex:1;background:var(--s1);border-radius:var(--r);padding:12px 14px}
 .sum b{display:block;font-size:24px}
 .sum span{color:var(--mu);font-size:13px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.seg.c3{grid-template-columns:repeat(3,1fr)}
+.seg button{padding:10px 0;border-radius:12px;background:var(--s2);color:var(--mu);font-size:13px;font-weight:600}
+.seg button.on{background:var(--em);color:var(--bg)}
+.gh{display:flex;align-items:baseline;gap:8px;margin:22px 2px 8px}
+.gh b{font-size:20px;letter-spacing:-.3px}
+.gh small{color:var(--mu);flex:1}
+.gh span{color:var(--mu);font-weight:700}
+.gh.now b{color:var(--em)}
+.gh.full span{color:var(--ok)}
 .row{display:flex;align-items:center;gap:12px;background:var(--s1);border-radius:var(--r);padding:10px 10px 10px 16px;margin-bottom:8px}
 .row .nm{flex:1;min-width:0;text-align:left}
 .row .nm b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row .nm small{color:var(--mu)}
+.row .nm small{color:var(--mu);font-size:13px}
 .st{min-width:52px;text-align:center;font-weight:800;font-size:26px;line-height:1;color:var(--mu)}
 .st i{display:block;font:normal 11px var(--f);margin-top:3px;color:var(--mu)}
 .st.on{color:var(--em)}.st.hot{color:var(--em2)}
@@ -37,6 +47,8 @@ h1{font-size:30px;margin:6px 0 2px;letter-spacing:-.5px}
 .chk svg{width:22px;height:22px;opacity:0;stroke:var(--bg);stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .chk.on{background:var(--em);border-color:var(--em);animation:pop .25s}
 .chk.on svg{opacity:1}
+.chk.rest{border-style:dashed;border-color:var(--mu)}
+.chk.slip{font-size:12px;font-weight:700;color:var(--mu)}
 @keyframes pop{50%{transform:scale(1.18)}}
 nav{display:flex;background:var(--s1);padding:8px 16px calc(8px + env(safe-area-inset-bottom));gap:8px}
 nav button{flex:1;padding:10px;border-radius:14px;color:var(--mu);font-weight:600}
@@ -48,9 +60,10 @@ nav button.on{background:var(--s2);color:var(--tx)}
 .big{text-align:center;margin:10px 0 18px}
 .big .n{font-size:84px;font-weight:800;line-height:1;color:var(--em);letter-spacing:-3px}
 .big p{margin:4px 0 0;color:var(--mu)}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.grid3 div{background:var(--s1);border-radius:14px;padding:10px;text-align:center}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.grid3 div,.grid3 .tile{background:var(--s1);border-radius:14px;padding:10px;text-align:center}
 .grid3 b{display:block;font-size:20px}.grid3 span{font-size:12px;color:var(--mu)}
+.good{color:var(--ok)}.bad{color:var(--bad)}
 .cal{background:var(--s1);border-radius:var(--r);padding:14px}
 .cal header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700}
 .cal header button{width:36px;height:36px;border-radius:50%;background:var(--s2)}
@@ -58,133 +71,425 @@ nav button.on{background:var(--s2);color:var(--tx)}
 .days span{font-size:11px;color:var(--mu)}
 .d{aspect-ratio:1;border-radius:50%;font-size:14px;color:var(--mu);display:grid;place-items:center}
 .d.done{background:var(--em);color:var(--bg);font-weight:700}
+.d.rest{background:var(--s2);color:var(--tx);box-shadow:inset 0 0 0 2px var(--mu)}
 .d.today{outline:2px solid var(--tx);outline-offset:1px}
 .d.fut{opacity:.25;pointer-events:none}
+.d.ro{pointer-events:none}
 .hint{color:var(--mu);font-size:13px;text-align:center;margin-top:10px}
 .card{background:var(--s1);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card p{margin:4px 0 10px;color:var(--mu);font-size:14px}
+.card.warn{border-left:4px solid var(--em)}
+.card.dim{opacity:.55}
 .wi{display:flex;gap:8px}
 .wi input{flex:1;min-width:0;background:var(--s2);border:0;color:var(--tx);font:700 22px var(--f);border-radius:14px;padding:12px 14px;outline:none}
 .wi input[type=date]{flex:none;width:140px;font-size:15px;font-weight:500}
+input.dt{background:var(--s2);border:0;color:var(--tx);font:500 15px var(--f);border-radius:14px;padding:11px 12px;outline:none}
 .btn{background:var(--em);color:var(--bg);font-weight:700;border-radius:14px;padding:0 20px}
 .btn.ghost{background:var(--s2);color:var(--tx);padding:12px 16px;margin-right:8px}
+.btn.danger{background:#4d2830;color:#ffb3b3;padding:12px 16px}
+.act{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.act .lbl{color:var(--mu);font-size:13px;flex:1;min-width:120px}
+.stp{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.stp .c{display:flex;align-items:center;gap:14px}
+.stp .c button,.tgt button{width:42px;height:42px;border-radius:50%;background:var(--s2);font-size:22px}
+.stp .c b{font-size:26px;min-width:30px;text-align:center}
+.tgt{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:10px}
+.tgt span{font-weight:700;min-width:100px;text-align:center}
+.hide{display:block;margin:10px auto 0;color:var(--mu);font-size:13px;padding:6px 10px}
+.badges{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+.badges span{padding:6px 12px;border-radius:999px;background:var(--s1);color:var(--mu);font-size:13px;font-weight:600}
+.badges span.on{background:var(--em);color:var(--bg)}
+.h2{font-size:15px;font-weight:700;margin:16px 2px 8px}
+.wk{display:flex;align-items:center;gap:8px;width:100%;background:var(--s1);border-radius:14px;padding:8px 10px 8px 12px;margin-bottom:6px;text-align:left}
+.wk .wn{flex:1;min-width:0;font-size:13.5px;font-weight:600;line-height:1.2}
+.wk.wkh{background:none;padding-top:0;padding-bottom:2px;margin:0;cursor:default}
+.dots{display:flex;gap:4px}
+.dots i{width:20px;height:20px;border-radius:50%;background:var(--s2);display:block;font:normal 10px/20px var(--f);text-align:center;color:var(--mu)}
+.dots i.on{background:var(--em)}
+.dots i.rest{background:none;box-shadow:inset 0 0 0 2px var(--mu)}
+.dots i.l{background:none}
+.wc{min-width:34px;text-align:right;font-size:16px;font-weight:800;color:var(--mu)}
+.wc.on{color:var(--em)}
 .wl{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--s2)}
 .wl:last-child{border:0}.wl small{color:var(--mu)}
 .wl button{color:var(--mu);padding:4px 8px}
-.up{color:#ff8a8a}.dn{color:var(--ok)}
 svg.ch{width:100%;height:auto;display:block}
+#toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;background:var(--tx);color:var(--bg);padding:11px 18px;border-radius:14px;font-weight:700;max-width:88vw;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div id="app"><main id="main"></main>
-<nav><button id="t-h">Habits</button><button id="t-w">Weight</button></nav></div>
+<nav><button id="t-h">Habits</button><button id="t-k">Week</button><button id="t-w">Weight</button></nav></div>
 <div id="sheet" class="sheet" hidden></div>
+<div id="toast"></div>
 <script>
-const HABITS=["Brush – Morning","Rauchen aufhören","Fitness","10K Steps or 45 Cardio","Breakfast + Omega 3 + Vitamin D","Protein 1","Room Clean","Ausbildung suchen","Arbeit suchen","Protein 2","Brush – Night","Magnesium + Ashwagandha","Hair Care","LoMo Exercise","FoMo Exercise","K aufhören","10 Pages Reading","YA aufhören","Skin Care – Morning","Skin Care – Night","TT Smo","TT Bod","TT LoMo"];
+/* Habit list. Keep the order: history is stored by position. Add new habits at the END.
+   t: "d" daily (default), "w" weekly target (w = sessions per week), "q" quit (days since last slip)
+   c: 1 = shows an "applications sent" counter. All of this can also be changed in the app via Edit habits. */
+const H=[
+ {n:"Brush – Morning"},
+ {n:"Rauchen aufhören",t:"q"},
+ {n:"Fitness",t:"w",w:4},
+ {n:"10K Steps or 45 Cardio"},
+ {n:"Breakfast + Omega 3 + Vitamin D"},
+ {n:"Protein 1"},
+ {n:"Room Clean"},
+ {n:"Ausbildung suchen",c:1},
+ {n:"Arbeit suchen",c:1},
+ {n:"Protein 2"},
+ {n:"Brush – Night"},
+ {n:"Magnesium + Ashwagandha"},
+ {n:"Hair Care",t:"w",w:3},
+ {n:"LoMo Exercise"},
+ {n:"FoMo",t:"q"},
+ {n:"K aufhören",t:"q"},
+ {n:"10 Pages Reading"},
+ {n:"YA aufhören",t:"q"},
+ {n:"Skin Care – Morning"},
+ {n:"Skin Care – Night"},
+ {n:"TT Smo"},
+ {n:"TT Bod",t:"w",w:1},
+ {n:"TT LoMo"},
+ {n:"Store – 30 min"},
+ {n:"No unnecessary spending"}];
+const HABITS=H.map(h=>h.n);
+/* Default sections (numbers = position in H, starting at 0). Your own choices in the app override these. */
+const GROUPS=[
+ {k:"Morning",sub:"",ids:[0,18,4,5]},
+ {k:"Day",sub:"",ids:[3,7,8,13,20,21,22,23]},
+ {k:"Evening",sub:"",ids:[2,9,6,12,24]},
+ {k:"Night",sub:"before bed",ids:[10,19,11,16,1,15,17,14]}];
+const MS={d:[7,30,100],w:[4,12,26],q:[7,30,100]};
+const nowGroup=()=>{const h=new Date().getHours();return h>=5&&h<11?0:h>=11&&h<17?1:h>=17&&h<21?2:3};
 const KEY="streaks.v1";
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-S=S||{logs:{},weights:{}};
-const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+S=S||{};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const today=()=>iso(new Date());
 const add=(s,n)=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return iso(d)};
+const diff=(a,b)=>Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/864e5);
+const wk=ds=>{const d=new Date(ds+"T12:00:00");return add(ds,-((d.getDay()+6)%7))};
+const DEF={};GROUPS.forEach((g,gi)=>g.ids.forEach(i=>DEF[i]=gi));
+const gOf=i=>S.groups[i]!==undefined?S.groups[i]:(DEF[i]!==undefined?DEF[i]:1);
+const typeOf=i=>S.types[i]||H[i].t||"d";
+const targetOf=i=>S.targets[i]||H[i].w||3;
+const hidden=i=>!!S.hidden[i];
 const set=i=>new Set(S.logs[i]||[]);
-function stats(i){
+const skipSet=i=>new Set(S.skips[i]||[]);
+
+/* Quit habits: S.quit[i].r = list of reset dates (the first is the quit date, later ones are slips).
+   Days clean = days since the last reset. */
+function ensureQuit(i){
+  if(S.quit[i]&&S.quit[i].r&&S.quit[i].r.length)return;
   const st=set(i);let d=today();if(!st.has(d))d=add(d,-1);
-  let cur=0;while(st.has(d)){cur++;d=add(d,-1)}
+  let n=0;while(st.has(d)){n++;d=add(d,-1)}
+  S.quit[i]={r:[n?d:today()]};
+}
+function norm(){
+  S.logs=S.logs||{};S.weights=S.weights||{};
+  ["groups","skips","counts","quit","types","targets","hidden"].forEach(k=>S[k]=S[k]||{});
+  H.forEach((_,i)=>{if(typeOf(i)==="q")ensureQuit(i)});
+  save();
+}
+
+function dStats(i){
+  const st=set(i),sk=skipSet(i),td=today(),ok=x=>st.has(x)||sk.has(x);
+  let d=td;if(!ok(d))d=add(d,-1);
+  let cur=0;while(ok(d)){if(st.has(d))cur++;d=add(d,-1)}
   let best=0,run=0,prev=null;
-  [...st].sort().forEach(x=>{run=(prev&&add(prev,1)===x)?run+1:1;best=Math.max(best,run);prev=x});
-  return{cur,best,total:st.size,doneToday:st.has(today())}
+  [...new Set([...st,...sk])].sort().forEach(x=>{
+    if(!(prev&&add(prev,1)===x))run=0;
+    if(st.has(x))run++;
+    best=Math.max(best,run);prev=x});
+  return{t:"d",cur,best,total:st.size,done:st.has(td),rest:sk.has(td),unit:"day"};
+}
+function wStats(i){
+  const st=set(i),T=targetOf(i),td=today(),cw=wk(td);
+  const cnt=w=>{let c=0;for(let k=0;k<7;k++)if(st.has(add(w,k)))c++;return c};
+  const met=w=>cnt(w)>=T;
+  const first=[...st].sort()[0],fw=first?wk(first):cw;
+  let w=met(cw)?cw:add(cw,-7),cur=0;
+  while(w>=fw&&met(w)){cur++;w=add(w,-7)}
+  let best=0,run=0;
+  for(let x=fw;x<=cw;x=add(x,7)){if(met(x)){run++;best=Math.max(best,run)}else run=0}
+  return{t:"w",cur,best,total:st.size,done:st.has(td),rest:false,week:cnt(cw),target:T,unit:"week"};
+}
+function qStats(i){
+  ensureQuit(i);const R=S.quit[i].r,td=today();
+  const lens=R.map((r,k)=>k<R.length-1?Math.max(0,diff(r,R[k+1])-1):Math.max(0,diff(r,td)));
+  const cur=lens[lens.length-1];
+  return{t:"q",cur,best:Math.max(...lens),total:lens.reduce((a,b)=>a+b,0),done:cur>0,rest:false,slips:R.length-1,since:R[R.length-1],unit:"day"};
+}
+function stats(i){const t=typeOf(i);return t==="q"?qStats(i):t==="w"?wStats(i):dStats(i)}
+function isClean(i,ds){
+  const R=S.quit[i].r;
+  for(let k=0;k<R.length;k++){const a=R[k],b=k<R.length-1?R[k+1]:null;
+    if(ds>a&&(b===null?ds<=today():ds<b))return true}
+  return false;
 }
 function toggle(i,day){
-  const st=set(i);st.has(day)?st.delete(day):st.add(day);
-  S.logs[i]=[...st].sort();save()
+  const st=set(i);let on;
+  if(st.has(day)){st.delete(day);on=false}
+  else{st.add(day);on=true;const sk=skipSet(i);if(sk.delete(day))S.skips[i]=[...sk].sort()}
+  S.logs[i]=[...st].sort();save();return on;
+}
+function cycleDay(i,day){
+  const st=set(i),sk=skipSet(i);
+  if(st.has(day)){st.delete(day);sk.add(day)}
+  else if(sk.has(day))sk.delete(day);
+  else st.add(day);
+  S.logs[i]=[...st].sort();S.skips[i]=[...sk].sort();save();
+}
+const cnt=(i,d)=>(S.counts[i]&&S.counts[i][d])||0;
+function cntStats(i){
+  const m=S.counts[i]||{},td=today(),ws=wk(td);let w=0;
+  for(let k=0;k<7;k++)w+=m[add(ws,k)]||0;
+  return{week:w,total:Object.values(m).reduce((a,b)=>a+b,0),today:m[td]||0};
 }
 const CHECK='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-let tab="h",open=null,month=today().slice(0,7);
+let tab="h",open=null,editing=false,month=today().slice(0,7),tt;
+const $=id=>document.getElementById(id);
+function toast(m){const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),2600)}
+const last30=st=>{let c=0,d=today();for(let k=0;k<30;k++){if(st.has(d))c++;d=add(d,-1)}return c};
+const unitOf=(s,n)=>s.t==="w"?(n===1?"wk":"wks"):(n===1?"day":"days");
 
 function render(){
-  $("t-h").className=tab==="h"?"on":"";$("t-w").className=tab==="w"?"on":"";
-  $("main").innerHTML=tab==="h"?home():weightView();
+  ["h","k","w"].forEach(x=>$("t-"+x).className=tab===x?"on":"");
+  $("main").innerHTML=tab==="h"?home():tab==="k"?weekView():weightView();
   if(tab==="w")bindWeight();
-  if(open!==null)sheet();
+  if(open!==null)sheet();else if(editing)editor(true);
 }
-const $=id=>document.getElementById(id);
 
+/* ---------- Habits tab ---------- */
+function needsBackup(){
+  if(!Object.keys(S.logs).length&&!Object.keys(S.weights).length)return null;
+  if(!S.lastBackup)return"never";
+  const n=diff(S.lastBackup,today());return n>=7?n+" days ago":null;
+}
+function row(i,s){
+  const h=HABITS[i],t=s.t;
+  let sub=t==="q"?`best ${s.best} · slips ${s.slips}`:t==="w"?`${s.week}/${s.target} this week · best ${s.best}`:`best ${s.best} · total ${s.total}`;
+  if(H[i].c)sub+=` · ${cntStats(i).week} sent this week`;
+  const right=t==="q"
+    ?`<button class="chk slip" onclick="slip(${i})" aria-label="Log a slip for ${h}">Slip</button>`
+    :`<button class="chk ${s.done?"on":""} ${s.rest?"rest":""}" onclick="tog(${i})" aria-label="Mark ${h} done today">${CHECK}</button>`;
+  return `<div class="row"><button class="nm" onclick="openH(${i})"><b>${h}</b><small>${sub}</small></button>
+  <button class="st ${s.cur?"on":""} ${s.cur>=30?"hot":""}" onclick="openH(${i})">${s.cur}<i>${unitOf(s,s.cur)}</i></button>${right}</div>`;
+}
 function home(){
-  const all=HABITS.map((_,i)=>stats(i));
-  const done=all.filter(s=>s.doneToday).length;
-  const top=Math.max(0,...all.map(s=>s.cur));
+  const vis=H.map((_,i)=>i).filter(i=>!hidden(i)),all={};vis.forEach(i=>all[i]=stats(i));
+  const track=vis.filter(i=>all[i].t!=="q");
+  const done=track.filter(i=>all[i].done).length;
+  const live=vis.filter(i=>all[i].cur>0).length;
   const dt=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+  const nb=needsBackup(),nh=H.length-vis.length;
   return `<h1>Streaks</h1><p class="sub">${dt}</p>
-  <div class="sum"><div><b>${done}/${HABITS.length}</b><span>done today</span></div><div><b>${top}</b><span>longest running streak</span></div></div>
-  ${HABITS.map((h,i)=>{const s=all[i];
-    return `<div class="row"><button class="nm" onclick="openH(${i})"><b>${h}</b><small>best ${s.best} · total ${s.total}</small></button>
-    <button class="st ${s.cur?"on":""} ${s.cur>=30?"hot":""}" onclick="openH(${i})">${s.cur}<i>${s.cur===1?"day":"days"}</i></button>
-    <button class="chk ${s.doneToday?"on":""}" onclick="tog(${i})" aria-label="Mark ${h} done today">${CHECK}</button></div>`}).join("")}
-  <p class="hint">Tap a habit to see its streak and edit past days.</p>
+  <div class="sum"><div><b>${done}/${track.length}</b><span>done today</span></div><div><b>${live}</b><span>habits on a streak</span></div></div>
+  ${nb?`<div class="card warn"><b>Back up your data</b><p>Last backup: ${nb}. Your history only lives on this phone.</p><button class="btn" style="padding:10px 18px" onclick="exp()">Copy backup</button></div>`:""}
+  <div style="margin:-6px 0 4px"><button class="btn ghost" style="margin:0" onclick="openEd()">Edit habits</button></div>
+  ${GROUPS.map((g,gi)=>{
+    const ids=vis.filter(i=>gOf(i)===gi);if(!ids.length)return"";
+    const tr=ids.filter(i=>all[i].t!=="q"),n=tr.filter(i=>all[i].done).length;
+    return `<div class="gh ${gi===nowGroup()?"now":""} ${tr.length&&n===tr.length?"full":""}"><b>${g.k}</b><small>${g.sub}</small><span>${tr.length?n+"/"+tr.length:""}</span></div>`+ids.map(i=>row(i,all[i])).join("");
+  }).join("")}
+  <p class="hint">Tap a habit to see its streak. Daily habits keep their streak on a rest day, weekly ones count weeks, quit habits count days since your last slip.${nh?" "+nh+" hidden.":""}</p>
   <div style="text-align:center;margin-top:14px"><button class="btn ghost" onclick="exp()">Copy backup</button><button class="btn ghost" onclick="imp()">Restore</button></div>`;
 }
-function tog(i){toggle(i,today());render()}
+function tog(i){
+  const was=stats(i).cur,on=toggle(i,today());render();
+  if(on){const s=stats(i);if(s.cur>was&&MS[s.t].includes(s.cur))toast(`${HABITS[i]}: ${s.cur} ${s.cur===1?s.unit:s.unit+"s"} in a row`)}
+}
+function slip(i){
+  ensureQuit(i);const R=S.quit[i].r,td=today();
+  if(R[R.length-1]===td){toast("Already restarted today");return}
+  if(!confirm("Log a slip for "+HABITS[i]+"? The counter goes back to 0. Your best streak is kept."))return;
+  R.push(td);save();render();
+}
+function setSince(i,v){
+  const td=today();if(!v||v>td)return;
+  const R=S.quit[i].r;R[R.length-1]=v;R.sort();save();render();
+}
+function restToday(i){
+  const sk=skipSet(i),st=set(i),td=today();
+  if(sk.has(td))sk.delete(td);else{sk.add(td);st.delete(td)}
+  S.logs[i]=[...st].sort();S.skips[i]=[...sk].sort();save();render();
+}
+function bump(i,n){
+  const m=S.counts[i]=S.counts[i]||{},td=today();
+  m[td]=Math.max(0,(m[td]||0)+n);if(!m[td])delete m[td];
+  if(n>0&&!set(i).has(td))toggle(i,td);
+  save();render();
+}
+function setTarget(i,d){S.targets[i]=Math.min(7,Math.max(1,targetOf(i)+d));save();render()}
 function openH(i){open=i;month=today().slice(0,7);render()}
 function closeH(){open=null;$("sheet").hidden=true;render()}
 function shift(n){const[y,m]=month.split("-").map(Number);const d=new Date(y,m-1+n,1);month=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");sheet()}
-function day(i,ds){toggle(i,ds);render()}
+function day(i,ds){if(typeOf(i)==="d")cycleDay(i,ds);else toggle(i,ds);render()}
 
+/* ---------- Habit detail ---------- */
 function sheet(){
-  const i=open,s=stats(i),st=set(i),[y,m]=month.split("-").map(Number);
-  const first=new Date(y,m-1,1),off=(first.getDay()+6)%7,n=new Date(y,m,0).getDate(),t=today();
+  const i=open,t=typeOf(i),s=stats(i),[y,m]=month.split("-").map(Number),td=today();
+  const st=set(i),sk=skipSet(i);
+  const first=new Date(y,m-1,1),off=(first.getDay()+6)%7,n=new Date(y,m,0).getDate();
   let cells="";for(let k=0;k<off;k++)cells+="<div></div>";
-  for(let d=1;d<=n;d++){const ds=`${month}-${String(d).padStart(2,"0")}`;
-    cells+=`<button class="d ${st.has(ds)?"done":""} ${ds===t?"today":""} ${ds>t?"fut":""}" onclick="day(${i},'${ds}')">${d}</button>`}
+  for(let d=1;d<=n;d++){
+    const ds=`${month}-${String(d).padStart(2,"0")}`;let cls="d";
+    if(t==="q"){if(isClean(i,ds))cls+=" done";cls+=" ro"}
+    else if(st.has(ds))cls+=" done";else if(t==="d"&&sk.has(ds))cls+=" rest";
+    if(ds===td)cls+=" today";if(ds>td)cls+=" fut";
+    cells+=`<button class="${cls}" ${t==="q"?"":`onclick="day(${i},'${ds}')"`}>${d}</button>`;
+  }
   const mn=first.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
+  let big,grid,act="";
+  if(t==="q"){
+    big=`<div class="n">${s.cur}</div><p>${s.cur===1?"day":"days"} clean</p>`;
+    grid=[[s.best,"best streak"],[s.slips,"slips"],[s.total,"total clean days"]];
+    act=`<div class="card"><div class="act" style="margin:0"><span class="lbl">Last slip or quit date</span><input class="dt" type="date" value="${s.since}" max="${td}" onchange="setSince(${i},this.value)"></div>
+    <button class="btn danger" style="width:100%;margin-top:12px" onclick="slip(${i})">I slipped</button></div>`;
+  }else if(t==="w"){
+    big=`<div class="n">${s.cur}</div><p>${s.cur===1?"week":"weeks"} in a row · ${s.week}/${s.target} this week</p>`;
+    grid=[[s.best,"best (weeks)"],[s.total,"total sessions"],[last30(st),"last 30 days"]];
+    act=`<div class="card"><b>Weekly target</b><div class="tgt"><button onclick="setTarget(${i},-1)">−</button><span>${s.target} per week</span><button onclick="setTarget(${i},1)">+</button></div></div>`;
+  }else{
+    big=`<div class="n">${s.cur}</div><p>${s.cur===1?"day":"days"} in a row${s.done||s.rest?"":s.cur?" · log today to keep it":""}</p>`;
+    grid=[[s.best,"best streak"],[s.total,"total days"],[last30(st),"last 30 days"]];
+    act=`<div class="card"><div class="act" style="margin:0"><span class="lbl">A rest day keeps your streak alive without counting as done.</span><button class="btn line" onclick="restToday(${i})">${s.rest?"Undo rest day":"Rest day today"}</button></div></div>`;
+  }
+  if(H[i].c){const c=cntStats(i);
+    act+=`<div class="card stp"><div><b>Applications sent today</b><p style="margin:2px 0 0;font-size:13px">This week ${c.week} · total ${c.total}</p></div><div class="c"><button onclick="bump(${i},-1)">−</button><b>${c.today}</b><button onclick="bump(${i},1)">+</button></div></div>`}
+  const badges=MS[t].map(v=>`<span class="${s.best>=v?"on":""}">${v} ${t==="w"?"weeks":"days"}</span>`).join("");
   const sh=$("sheet");sh.hidden=false;
-  sh.innerHTML=`<div><button class="back" onclick="closeH()">‹ All habits</button>
+  sh.innerHTML=`<div><button class="back" onclick="closeH()">‹ Back</button>
   <h1 style="text-align:center;font-size:22px">${HABITS[i]}</h1>
-  <div class="big"><div class="n">${s.cur}</div><p>${s.cur===1?"day":"days"} in a row${s.doneToday?"":s.cur?" · log today to keep it":""}</p></div>
-  <div class="grid3"><div><b>${s.best}</b><span>best streak</span></div><div><b>${s.total}</b><span>total days</span></div><div><b>${last30(st)}</b><span>last 30 days</span></div></div>
+  <div class="big">${big}</div>
+  <div class="grid3">${grid.map(g=>`<div><b>${g[0]}</b><span>${g[1]}</span></div>`).join("")}</div>
+  ${act}
+  <div class="h2">Milestones</div><div class="badges">${badges}</div>
   <div class="cal"><header><button onclick="shift(-1)">‹</button>${mn}<button onclick="shift(1)">›</button></header>
   <div class="days">${["M","T","W","T","F","S","S"].map(x=>`<span>${x}</span>`).join("")}${cells}</div></div>
-  <p class="hint">Tap any day to mark or unmark it.</p></div>`;
+  <p class="hint">${t==="q"?"Orange days are clean days.":t==="d"?"Tap a day to cycle: done, rest day, empty.":"Tap any day to mark or unmark it."}</p></div>`;
 }
-function last30(st){let c=0,d=today();for(let k=0;k<30;k++){if(st.has(d))c++;d=add(d,-1)}return c}
 
+/* ---------- Week tab ---------- */
+function weekView(){
+  const td=today(),days=[];for(let k=6;k>=0;k--)days.push(add(td,-k));
+  const vis=H.map((_,i)=>i).filter(i=>!hidden(i));
+  let total=0;
+  const lbl=days.map(d=>`<i class="l">${new Date(d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"narrow"})}</i>`).join("");
+  const body=GROUPS.map((g,gi)=>{
+    const ids=vis.filter(i=>gOf(i)===gi);if(!ids.length)return"";
+    return `<div class="gh"><b>${g.k}</b></div>`+ids.map(i=>{
+      const t=typeOf(i),s=stats(i),st=set(i),sk=skipSet(i);
+      const cells=days.map(d=>{
+        let c="";
+        if(t==="q"){if(isClean(i,d))c="on"}
+        else if(st.has(d)){c="on";total++}
+        else if(t==="d"&&sk.has(d))c="rest";
+        return `<i class="${c}"></i>`}).join("");
+      return `<button class="wk" onclick="openH(${i})"><span class="wn">${HABITS[i]}</span><span class="dots">${cells}</span><b class="wc ${s.cur?"on":""}">${s.cur}${t==="w"?"w":""}</b></button>`;
+    }).join("");
+  }).join("");
+  return `<h1>Week</h1><p class="sub">${total} check-ins in the last 7 days</p>
+  <div class="wk wkh"><span class="wn"></span><span class="dots">${lbl}</span><b class="wc"></b></div>${body}
+  <p class="hint">Right column: current streak (w = weeks). Tap a row for details.</p>`;
+}
+
+/* ---------- Edit habits ---------- */
+function openEd(){editing=true;editor()}
+function closeEd(){editing=false;$("sheet").hidden=true;render()}
+function setG(i,g){S.groups[i]=g;save();editor(true)}
+function setType(i,t){S.types[i]=t;if(t==="q")ensureQuit(i);save();render()}
+function toggleHide(i){if(S.hidden[i])delete S.hidden[i];else S.hidden[i]=1;save();render()}
+function resetG(){if(confirm("Reset sections, habit types and weekly targets to the suggested setup? Hidden habits stay hidden.")){S.groups={};S.types={};S.targets={};norm();editor(true)}}
+function editor(keep){
+  const sh=$("sheet"),y=keep?sh.scrollTop:0;sh.hidden=false;
+  const cnt=GROUPS.map((_,gi)=>H.filter((_,i)=>gOf(i)===gi).length);
+  const TY=[["d","Daily"],["w","Weekly"],["q","Quit"]];
+  sh.innerHTML=`<div><button class="back" onclick="closeEd()">Done</button>
+  <h1>Edit habits</h1><p class="sub">${GROUPS.map((g,gi)=>g.k+" "+cnt[gi]).join(" · ")}</p>
+  <p class="hint" style="text-align:left;margin:-8px 0 14px">Daily: streak in days, rest days allowed. Weekly: streak in weeks, you set the sessions per week. Quit: counts days since your last slip.</p>
+  ${H.map((h,i)=>{const t=typeOf(i);
+    return `<div class="card ${hidden(i)?"dim":""}"><b>${h.n}</b>
+    <div class="seg">${GROUPS.map((g,gi)=>`<button class="${gOf(i)===gi?"on":""}" onclick="setG(${i},${gi})">${g.k}</button>`).join("")}</div>
+    <div class="seg c3">${TY.map(x=>`<button class="${t===x[0]?"on":""}" onclick="setType(${i},'${x[0]}')">${x[1]}</button>`).join("")}</div>
+    ${t==="w"?`<div class="tgt"><button onclick="setTarget(${i},-1)">−</button><span>${targetOf(i)} per week</span><button onclick="setTarget(${i},1)">+</button></div>`:""}
+    <button class="hide" onclick="toggleHide(${i})">${hidden(i)?"Show again":"Hide this habit"}</button></div>`}).join("")}
+  <div style="text-align:center;margin-top:8px"><button class="btn ghost" onclick="resetG()">Reset to suggestion</button></div></div>`;
+  sh.scrollTop=y;
+}
+
+/* ---------- Weight tab ---------- */
+function pace(ws){
+  if(ws.length<2)return null;
+  const lastD=ws[ws.length-1][0],r=ws.filter(e=>e[0]>=add(lastD,-28));
+  if(r.length<2)return null;
+  const days=diff(r[0][0],lastD);if(days<4)return null;
+  return (r[r.length-1][1]-r[0][1])/days*7;
+}
 function weightView(){
-  const ws=Object.entries(S.weights).sort();
+  const ws=Object.entries(S.weights).sort(),goal=S.goal||75;
   const cur=ws.length?ws[ws.length-1][1]:null;
-  const chg=ws.length>1?cur-ws[0][1]:0;
-  const wk=ws.length>1?(()=>{const t=add(today(),-7);const old=[...ws].reverse().find(e=>e[0]<=t);return old?cur-old[1]:null})():null;
+  const need=cur!==null?goal-cur:null,p=pace(ws);
+  const good=v=>(v===null||v===0||need===null||Math.abs(need)<.05)?"":(v*need>0?"good":"bad");
   const f=v=>(v>0?"+":"")+v.toFixed(1);
-  const cls=v=>v>0?"up":v<0?"dn":"";
-  return `<h1>Weight</h1><p class="sub">Log it once a day, ideally the same time.</p>
+  const t7=add(today(),-7),old=[...ws].reverse().find(e=>e[0]<=t7);
+  const w7=(cur!==null&&old)?cur-old[1]:null;
+  let eta="–";
+  if(need!==null){if(Math.abs(need)<.05)eta="reached";else if(p!==null&&p*need>0){const w=Math.ceil(need/p);eta=w>104?"100+ wks":w+(w===1?" wk":" wks")}}
+  const togo=need===null?"–":Math.abs(need)<.05?"0.0":Math.abs(need).toFixed(1);
+  const togoL=need===null||Math.abs(need)<.05?"kg to go":(need>0?"kg to gain":"kg to lose");
+  return `<h1>Weight</h1><p class="sub">Log it once a day, ideally at the same time.</p>
   <div class="card"><div class="wi"><input id="wv" type="number" inputmode="decimal" step="0.1" placeholder="kg"><input id="wd" type="date" value="${today()}" max="${today()}"><button class="btn" id="ws">Save</button></div></div>
   <div class="grid3"><div><b>${cur!==null?cur.toFixed(1):"–"}</b><span>current kg</span></div>
-  <div><b class="${cls(wk)}">${wk!==null?f(wk):"–"}</b><span>vs 7 days ago</span></div>
-  <div><b class="${cls(chg)}">${ws.length>1?f(chg):"–"}</b><span>since start</span></div></div>
-  ${ws.length>1?`<div class="card">${chart(ws.slice(-60))}</div>`:""}
-  <div class="card" style="padding:6px 14px">${ws.length?[...ws].reverse().slice(0,60).map(([d,v],k,a)=>{const p=a[k+1];const df=p?v-p[1]:null;
-   return `<div class="wl"><div><b>${v.toFixed(1)} kg</b> ${df!==null&&df!==0?`<span class="${cls(df)}">${f(df)}</span>`:""}<br><small>${new Date(d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</small></div><button onclick="delW('${d}')" aria-label="Delete">✕</button></div>`}).join(""):'<p class="hint">No entries yet. Enter today\'s weight above.</p>'}</div>`;
+  <button class="tile" onclick="setGoal()"><b>${goal.toFixed(1)}</b><span>goal kg · tap to edit</span></button>
+  <div><b>${togo}</b><span>${togoL}</span></div></div>
+  <div class="grid3"><div><b class="${good(w7)}">${w7!==null?f(w7):"–"}</b><span>vs 7 days ago</span></div>
+  <div><b class="${good(p)}">${p!==null?f(p):"–"}</b><span>kg per week</span></div>
+  <div><b>${eta}</b><span>est. to goal</span></div></div>
+  ${ws.length>1?`<div class="card">${chart(ws.slice(-60),goal)}</div>`:""}
+  <div class="card" style="padding:6px 14px">${ws.length?[...ws].reverse().slice(0,60).map(([d,v],k,a)=>{const q=a[k+1];const df=q?v-q[1]:null;
+   return `<div class="wl"><div><b>${v.toFixed(1)} kg</b> ${df!==null&&df!==0?`<span class="${good(df)}">${f(df)}</span>`:""}<br><small>${new Date(d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</small></div><button onclick="delW('${d}')" aria-label="Delete">✕</button></div>`}).join(""):'<p class="hint">No entries yet. Enter today\'s weight above.</p>'}</div>`;
 }
-function chart(ws){
-  const W=340,H=150,p=14,v=ws.map(e=>e[1]);let lo=Math.min(...v)-.5,hi=Math.max(...v)+.5;
-  const x=i=>p+i*(W-2*p)/(ws.length-1),y=a=>H-p-(a-lo)/(hi-lo)*(H-2*p);
-  const pts=ws.map((e,i)=>`${x(i).toFixed(1)},${y(e[1]).toFixed(1)}`);
-  const li=ws.length-1;
-  return `<svg class="ch" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a45" stop-opacity=".35"/><stop offset="1" stop-color="#ff7a45" stop-opacity="0"/></linearGradient></defs>
-  <polygon points="${p},${H-p} ${pts.join(" ")} ${x(li)},${H-p}" fill="url(#g)"/>
+function chart(ws,goal){
+  const W=340,HH=160,p=14,v=ws.map(e=>e[1]);
+  const lo=Math.min(...v,goal)-.5,hi=Math.max(...v,goal)+.5;
+  const x=i=>p+i*(W-2*p)/(ws.length-1),y=a=>HH-p-(a-lo)/(hi-lo)*(HH-2*p);
+  const pts=ws.map((e,i)=>`${x(i).toFixed(1)},${y(e[1]).toFixed(1)}`),li=ws.length-1,gy=y(goal).toFixed(1);
+  return `<svg class="ch" viewBox="0 0 ${W} ${HH}"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a45" stop-opacity=".35"/><stop offset="1" stop-color="#ff7a45" stop-opacity="0"/></linearGradient></defs>
+  <polygon points="${p},${HH-p} ${pts.join(" ")} ${x(li)},${HH-p}" fill="url(#g)"/>
+  <line x1="${p}" x2="${W-p}" y1="${gy}" y2="${gy}" stroke="#7be0b0" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="${W-p}" y="${gy-5}" text-anchor="end" fill="#7be0b0" font-size="11">goal ${goal}</text>
   <polyline points="${pts.join(" ")}" fill="none" stroke="#ff7a45" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
   <circle cx="${x(li)}" cy="${y(v[li])}" r="5" fill="#ffb35c"/>
-  <text x="${p}" y="12" fill="#9a93b3" font-size="11">${hi.toFixed(1)}</text><text x="${p}" y="${H-2}" fill="#9a93b3" font-size="11">${lo.toFixed(1)}</text></svg>`;
+  <text x="${p}" y="12" fill="#9a93b3" font-size="11">${hi.toFixed(1)}</text><text x="${p}" y="${HH-2}" fill="#9a93b3" font-size="11">${lo.toFixed(1)}</text></svg>`;
 }
 function bindWeight(){
   $("ws").onclick=()=>{const v=parseFloat($("wv").value.replace(",","."));const d=$("wd").value||today();
     if(!(v>20&&v<400)){$("wv").focus();return}S.weights[d]=Math.round(v*10)/10;save();render()};
   const ws=Object.entries(S.weights).sort();if(ws.length)$("wv").placeholder=ws[ws.length-1][1].toFixed(1)+" kg";
 }
+function setGoal(){
+  const v=parseFloat(String(prompt("Goal weight in kg",S.goal||75)||"").replace(",","."));
+  if(v>20&&v<400){S.goal=Math.round(v*10)/10;save();render()}
+}
 function delW(d){delete S.weights[d];save();render()}
-function exp(){const j=JSON.stringify(S);(navigator.clipboard?navigator.clipboard.writeText(j):Promise.reject()).then(()=>alert("Backup copied. Paste it into Notes or a message to keep it safe.")).catch(()=>prompt("Copy this backup:",j))}
-function imp(){const j=prompt("Paste your backup here. This replaces current data.");if(!j)return;
-  try{const o=JSON.parse(j);if(!o.logs||!o.weights)throw 0;S=o;save();render()}catch(e){alert("That backup didn't look right.")}}
-$("t-h").onclick=()=>{tab="h";render()};$("t-w").onclick=()=>{tab="w";render()};
+
+/* ---------- Backup ---------- */
+function exp(){
+  const j=JSON.stringify(S),ok=()=>{S.lastBackup=today();save();render()};
+  (navigator.clipboard?navigator.clipboard.writeText(j):Promise.reject()).then(
+    ()=>{ok();alert("Backup copied. Paste it into Notes or a message to keep it safe.")},
+    ()=>{prompt("Copy this backup:",j);ok()});
+}
+function imp(){
+  const j=prompt("Paste your backup here. This replaces current data.");if(!j)return;
+  try{const o=JSON.parse(j);if(!o.logs||!o.weights)throw 0;S=o;norm();render()}catch(e){alert("That backup didn't look right.")}
+}
+$("t-h").onclick=()=>{tab="h";render()};$("t-k").onclick=()=>{tab="k";render()};$("t-w").onclick=()=>{tab="w";render()};
+norm();
 render();
 if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js");
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
